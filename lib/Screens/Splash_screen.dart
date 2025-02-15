@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
         fit: StackFit.expand,
         children: [
           Center(
-            child: Container(
+            child: SizedBox(
               height: 200,
               width: 200,
               child: Image.asset(

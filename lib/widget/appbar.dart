@@ -4,6 +4,8 @@ import 'package:mercy_tv_app/Screens/about_screen.dart';
 import 'package:mercy_tv_app/Screens/profile_page.dart';
 
 class Appbar extends StatelessWidget{
+  const Appbar({super.key});
+
   @override
   Widget build(BuildContext context) {
    return Scaffold(

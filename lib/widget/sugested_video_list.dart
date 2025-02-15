@@ -50,7 +50,7 @@ class _SuggestedVideoCardState extends State<SuggestedVideoCard> {
               crossAxisCount: 2,
               crossAxisSpacing: 10,
               mainAxisSpacing: 15,
-              childAspectRatio: 1.3,
+              childAspectRatio: 1.5,
             ),
             itemCount: snapshot.data.length,
             itemBuilder: (context, index) {
@@ -182,7 +182,11 @@ class VideoThumbnailCard extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  color: Colors.black.withOpacity(0.4),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/transparent.png'),
+                    fit: BoxFit
+                        .cover, // Makes the image cover the entire container
+                  ),
                 ),
               ),
               Positioned(
@@ -194,23 +198,26 @@ class VideoThumbnailCard extends StatelessWidget {
                     Text(
                       programDetails.title,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Mulish-Medium'),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.history, color: Colors.red, size: 18),
+                        const Icon(Icons.history,
+                            color: CustomColors.buttonColor, size: 18),
                         const SizedBox(width: 5),
                         Text(
                           formatDateTime(
                               programDetails.date, programDetails.time),
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 12),
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontFamily: 'Mulish-Medium'),
                         ),
                       ],
                     ),

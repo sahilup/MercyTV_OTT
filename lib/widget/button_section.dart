@@ -33,11 +33,12 @@ class ButtonSection extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Mulish-Bold'
               ),
             ),
           ],
         ),
-        SizedBox(width: 180),
+        Spacer(),
         GestureDetector(
           onTap: () {
             const String videoUrl = 'https://example.com/your-video-link';
@@ -55,6 +56,7 @@ class ButtonSection extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
+                  fontFamily: 'Mulish-Medium'
                 ),
               ),
             ],

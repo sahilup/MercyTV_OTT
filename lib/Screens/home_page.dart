@@ -17,7 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isFavorite = false;
-  late Timer _timer;
+  Timer? _timer;
   DateTime _currentDateTime = DateTime.now();
   String _currentVideoUrl = 'https://ott.mercytv.tv/hls_output/master.m3u8';
   bool _isLiveStream = true;
@@ -28,16 +28,25 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _currentDateTime = DateTime.now();
-      });
+      if (mounted) {
+        setState(() {
+          _currentDateTime = DateTime.now();
+        });
+      } else {
+        _timer?.cancel();
+      }
     });
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -49,12 +58,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _playVideo(ProgramDetails programDetails) {
+    if (!mounted) return;
     setState(() {
       _currentVideoUrl = programDetails.videoUrl;
       _isLiveStream = false;
       _selectedProgramTitle = programDetails.title;
 
-      // Date Formatting
       if (programDetails.date != null && programDetails.date!.isNotEmpty) {
         try {
           DateTime parsedDate =
@@ -67,7 +76,6 @@ class _HomePageState extends State<HomePage> {
         _selectedProgramDate = '';
       }
 
-      // Time Formatting
       if (programDetails.time != null && programDetails.time!.isNotEmpty) {
         try {
           DateTime parsedTime =
@@ -79,16 +87,6 @@ class _HomePageState extends State<HomePage> {
       } else {
         _selectedProgramTime = '';
       }
-    });
-  }
-
-  void _playLiveStream() {
-    setState(() {
-      _currentVideoUrl = 'https://ott.mercytv.tv/hls_output/master.m3u8';
-      _isLiveStream = true;
-      _selectedProgramTitle = 'Mercy TV Live';
-      _selectedProgramDate = '';
-      _selectedProgramTime = '';
     });
   }
 
@@ -116,7 +114,6 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Column(
           children: [
-            // Video Player at the Top
             SizedBox(
               height: 250,
               child: ScreenPlayer(
@@ -124,7 +121,6 @@ class _HomePageState extends State<HomePage> {
                 isLiveStream: _isLiveStream,
               ),
             ),
-            // Scrollable content
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -136,41 +132,21 @@ class _HomePageState extends State<HomePage> {
                       Row(
                         children: [
                           SizedBox(
-                            width: MediaQuery.of(context).size.width *
-                                0.7, // Limit title to 70% of width
+                            width: MediaQuery.of(context).size.width * 0.9,
                             child: GestureDetector(
-                              onTap: _playLiveStream, // Switch back to Live
                               child: Text(
                                 _selectedProgramTitle,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
+                                  fontFamily: 'Mulish-Bold'
                                 ),
-                                overflow: TextOverflow
-                                    .ellipsis, // Prevent overflow, add "..."
+                                overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
                             ),
-                          ),
-                          const Spacer(),
-                          if (!_isLiveStream)
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(360),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 3, vertical: 3),
-                              child: IconButton(
-                                onPressed: _playLiveStream,
-                                icon: const Icon(
-                                  Icons.live_tv,
-                                  color: Colors.black,
-                                  size: 24,
-                                ),
-                              ),
-                            ),
+                          )
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -179,7 +155,9 @@ class _HomePageState extends State<HomePage> {
                           Text(
                             formattedDate,
                             style: const TextStyle(
-                                color: Colors.white, fontSize: 15),
+                                color: Colors.white, fontSize: 15,
+                                fontFamily: 'Mulish-Medium'),
+                                
                           ),
                           const SizedBox(width: 8),
                           const Text("|",
@@ -193,57 +171,45 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      ButtonSection(),
+                      const ButtonSection(),
                       const SizedBox(height: 20),
                       GestureDetector(
                         onTap: _launchURL,
                         child: Container(
-                          height: 50,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(40),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.yellow
-                                    .withOpacity(0.6), // Yellow shadow
-                                spreadRadius: 0.1,
-                                blurRadius: 10,
-                                offset: const Offset(
-                                    0, 1), // Shadow only at the bottom
-                              ),
-                            ],
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: const Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Sponsor Us',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          child: const Center(
+                            child: Text(
+                              'Sponsor us',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.normal,
+                                fontFamily: 'Mulish-Medium'
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       const Text(
                         'Past Programs',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Mulish-Medium'
                         ),
                       ),
                       const SizedBox(height: 5),
                       Container(
-                          width: 138,
-                          height: 2,
-                          color: CustomColors.buttonColor),
+                        width: 138,
+                        height: 2,
+                        color: CustomColors.buttonColor,
+                      ),
                       SuggestedVideoCard(
                         onVideoTap: _playVideo,
                       ),
