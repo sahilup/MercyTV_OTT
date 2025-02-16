@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mercy_tv_app/Screens/home_page.dart';
+import 'package:mercy_tv_app/Screens/Splash_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -12,10 +12,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home:  SplashScreen(),
     );
   }
 }

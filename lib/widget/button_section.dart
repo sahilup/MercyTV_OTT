@@ -1,101 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
-class ButtonSection extends StatefulWidget {
+class ButtonSection extends StatelessWidget {
   const ButtonSection({super.key});
 
   @override
-  _BottomButtonSectionState createState() => _BottomButtonSectionState();
-}
-
-class _BottomButtonSectionState extends State<ButtonSection> {
-  bool isWatchlistSelected = false;
-  bool isReminderSelected = false;
-  bool isShareSelected = false;
-  bool isCommentsSelected = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildButton(
-            icon: Icons.notifications,
-            label: 'Reminder',
-            isSelected: isReminderSelected,
-            onTap: () {
-              setState(() {
-                isReminderSelected = !isReminderSelected;
-              });
-            },
-          ),
-          _buildButton(
-            icon: Icons.share_outlined,
-            label: 'Share',
-            isSelected: isShareSelected,
-            onTap: () {
-              setState(() {
-                isShareSelected = !isShareSelected;
-              });
-              final String videoUrl =
-                  'https://example.com/your-video-link';
-              Share.share('Check out this video: $videoUrl',
-                  subject: 'Amazing Video');
-            },
-          ),
-          _buildButton(
-            icon: Icons.comment_outlined,
-            label: 'Comments',
-            isSelected: isCommentsSelected,
-            onTap: () {
-              setState(() {
-                isCommentsSelected = !isCommentsSelected;
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildButton({
-    required IconData icon,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(32),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+    return Row(
+      mainAxisSize: MainAxisSize.min, // Important for unbounded width issues
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min, // Important for unbounded width issues
           children: [
-            Icon(
-              icon,
-              color: Colors.white,
-              size: 22,
+            Container(
+              height: 50,
+              width: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Image.asset(
+                'assets/images/logo.png',
+                height: 36,
+                width: 36,
+              ),
             ),
-            const SizedBox(width: 5),
-            Text(
-              label,
+            const SizedBox(width: 15),
+            const Text(
+              'Mercy TV',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 15,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Mulish-Bold'
               ),
             ),
           ],
         ),
-      ),
+        Spacer(),
+        GestureDetector(
+          onTap: () {
+            const String videoUrl = 'https://example.com/your-video-link';
+            Share.share('Check out this video: $videoUrl',
+                subject: 'Amazing Video');
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.share_outlined, color: Colors.white,size: 26,),
+              SizedBox(height: 4),
+              Text(
+                'Share',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Mulish-Medium'
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

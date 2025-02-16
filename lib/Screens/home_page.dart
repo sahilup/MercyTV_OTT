@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mercy_tv_app/Colors/custom_color.dart';
-import 'package:mercy_tv_app/Screens/profile_page.dart';
 import 'package:mercy_tv_app/widget/button_section.dart';
 import 'package:mercy_tv_app/widget/screen_player.dart';
 import 'package:mercy_tv_app/API/dataModel.dart';
@@ -18,7 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isFavorite = false;
-  late Timer _timer;
+  Timer? _timer;
   DateTime _currentDateTime = DateTime.now();
   String _currentVideoUrl = 'https://ott.mercytv.tv/hls_output/master.m3u8';
   bool _isLiveStream = true;
@@ -29,43 +28,65 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _currentDateTime = DateTime.now();
-      });
+      if (mounted) {
+        setState(() {
+          _currentDateTime = DateTime.now();
+        });
+      } else {
+        _timer?.cancel();
+      }
     });
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
   Future<void> _launchURL() async {
-    final Uri url = Uri.parse('https://mercytv.tv/support/');
+    final Uri url = Uri.parse('https://mercytv.tv/support-ott/');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw 'Could not launch $url';
     }
   }
 
   void _playVideo(ProgramDetails programDetails) {
+    if (!mounted) return;
     setState(() {
       _currentVideoUrl = programDetails.videoUrl;
       _isLiveStream = false;
       _selectedProgramTitle = programDetails.title;
-      _selectedProgramDate = programDetails.date ?? '';
-      _selectedProgramTime = programDetails.time ?? '';
-    });
-  }
 
-  void _playLiveStream() {
-    setState(() {
-      _currentVideoUrl = 'https://ott.mercytv.tv/hls_output/master.m3u8';
-      _isLiveStream = true;
-      _selectedProgramTitle = 'Mercy TV Live';
-      _selectedProgramDate = '';
-      _selectedProgramTime = '';
+      if (programDetails.date != null && programDetails.date!.isNotEmpty) {
+        try {
+          DateTime parsedDate =
+              DateFormat('yyyy-MM-dd').parse(programDetails.date!);
+          _selectedProgramDate = DateFormat('EEE dd MMM').format(parsedDate);
+        } catch (e) {
+          _selectedProgramDate = programDetails.date!;
+        }
+      } else {
+        _selectedProgramDate = '';
+      }
+
+      if (programDetails.time != null && programDetails.time!.isNotEmpty) {
+        try {
+          DateTime parsedTime =
+              DateFormat('HH:mm:ss').parse(programDetails.time!);
+          _selectedProgramTime = DateFormat('hh:mm a').format(parsedTime);
+        } catch (e) {
+          _selectedProgramTime = programDetails.time!;
+        }
+      } else {
+        _selectedProgramTime = '';
+      }
     });
   }
 
@@ -79,45 +100,6 @@ class _HomePageState extends State<HomePage> {
         : DateFormat('hh:mm a').format(_currentDateTime);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mercy TV'),
-        automaticallyImplyLeading: true,
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.teal,
-              ),
-              child: Text(
-                'Mercy TV',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Profile'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: RadialGradient(
@@ -132,7 +114,6 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Column(
           children: [
-            // Video Player at the Top
             SizedBox(
               height: 250,
               child: ScreenPlayer(
@@ -140,7 +121,6 @@ class _HomePageState extends State<HomePage> {
                 isLiveStream: _isLiveStream,
               ),
             ),
-            // Scrollable content
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -151,36 +131,22 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Row(
                         children: [
-                          GestureDetector(
-                            onTap: _playLiveStream, // Switch back to Live
-                            child: Text(
-                              _selectedProgramTitle,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          // Conditionally display the "Live" button
-                          if (!_isLiveStream)
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(360),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 3, vertical: 3),
-                              child: IconButton(
-                                onPressed: _playLiveStream,
-                                icon: const Icon(
-                                  Icons.live_tv,
-                                  color: Colors.black,
-                                  size: 24,
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: GestureDetector(
+                              child: Text(
+                                _selectedProgramTitle,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Mulish-Bold'
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ),
+                          )
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -189,7 +155,9 @@ class _HomePageState extends State<HomePage> {
                           Text(
                             formattedDate,
                             style: const TextStyle(
-                                color: Colors.white, fontSize: 15),
+                                color: Colors.white, fontSize: 15,
+                                fontFamily: 'Mulish-Medium'),
+                                
                           ),
                           const SizedBox(width: 8),
                           const Text("|",
@@ -203,90 +171,45 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Container(
-                            height: 50,
-                            width: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              height: 36,
-                              width: 36,
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          const Text(
-                            'Mercy TV',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: _launchURL,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(32),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 7),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Donate',
-                                    style: TextStyle(
-                                      color: isFavorite
-                                          ? Colors.red
-                                          : Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        isFavorite = !isFavorite;
-                                      });
-                                    },
-                                    child: Icon(
-                                      isFavorite
-                                          ? Icons.volunteer_activism
-                                          : Icons.volunteer_activism_outlined,
-                                      color: isFavorite
-                                          ? Colors.red
-                                          : Colors.black,
-                                      size: 24,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
                       const ButtonSection(),
-                      const Divider(color: Colors.grey, thickness: 1),
+                      const SizedBox(height: 20),
+                      GestureDetector(
+                        onTap: _launchURL,
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(40),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Sponsor us',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 20,
+                                fontWeight: FontWeight.normal,
+                                fontFamily: 'Mulish-Medium'
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
                       const Text(
                         'Past Programs',
                         style: TextStyle(
-                          color: CustomColors.buttonColor,
+                          color: Colors.white,
                           fontSize: 20,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Mulish-Medium'
                         ),
                       ),
-                      Container(width: 138, height: 2, color: Colors.red),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 5),
+                      Container(
+                        width: 138,
+                        height: 2,
+                        color: CustomColors.buttonColor,
+                      ),
                       SuggestedVideoCard(
                         onVideoTap: _playVideo,
                       ),
