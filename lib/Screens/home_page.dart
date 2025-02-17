@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   bool isFavorite = false;
   Timer? _timer;
   DateTime _currentDateTime = DateTime.now();
-  String _currentVideoUrl = 'https://ott.mercytv.tv/hls_output/master.m3u8';
+  String _currentVideoUrl = 'https://mercyott.com/hls_output/master.m3u8';
   bool _isLiveStream = true;
   String _selectedProgramTitle = 'Mercy TV Live';
   String _selectedProgramDate = '';

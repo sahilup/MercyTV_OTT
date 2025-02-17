@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
@@ -25,17 +23,16 @@ class ScreenPlayerState extends State<ScreenPlayer>
   ChewieController? _chewieController;
   bool _isVideoInitialized = false;
   bool _isDisposed = false;
-  bool _isLiveStream = true;
-  bool _showButton = true;
+  bool _isLiveStream = false;
+  bool _showButton = false;
   Timer? _hideButtonTimer;
+  int _playerInitToken = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializePlayer(widget.videoUrl, widget.isLiveStream);
-    _listenToOrientationChanges();
-    _startHideButtonTimer();
   }
 
   @override
@@ -49,6 +46,8 @@ class ScreenPlayerState extends State<ScreenPlayer>
   Future<void> _initializePlayer(String videoUrl, bool isLiveStream) async {
     _disposeControllers();
 
+    final int currentToken = ++_playerInitToken;
+
     try {
       _videoController = VideoPlayerController.network(
         videoUrl,
@@ -57,49 +56,50 @@ class ScreenPlayerState extends State<ScreenPlayer>
                 mixWithOthers: true, allowBackgroundPlayback: true)
             : null,
       );
-      await _videoController!.initialize();
-      if (mounted && !_isDisposed) {
-        setState(() {
-          _setupChewieController(videoUrl, isLiveStream);
-          _isVideoInitialized = true;
-          _isLiveStream = isLiveStream;
-        });
 
+      await _videoController!.initialize();
+
+      if (mounted && !_isDisposed && currentToken == _playerInitToken) {
+        _isLiveStream = isLiveStream;
+        _isVideoInitialized = true;
+        _setupChewieController();
         if (isLiveStream) {
           _videoController!.play();
         }
+        if (mounted && !_isDisposed) {
+          setState(() {});
+        }
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isVideoInitialized = false;
-        });
+      if (mounted && currentToken == _playerInitToken) {
+        _isVideoInitialized = false;
+        if (mounted && !_isDisposed) {
+          setState(() {});
+        }
       }
       print("Error initializing video: $e");
     }
   }
 
-  void _setupChewieController(String videoUrl, bool isLiveStream) {
+  void _setupChewieController() {
     _chewieController = ChewieController(
       videoPlayerController: _videoController!,
       aspectRatio: _videoController!.value.aspectRatio,
       autoPlay: true,
       looping: false,
       showControls: true,
-      showOptions: true,
       allowFullScreen: true,
-      allowPlaybackSpeedChanging: !isLiveStream,
+      allowPlaybackSpeedChanging: !_isLiveStream,
       isLive: false,
       fullScreenByDefault: false,
-      autoInitialize: true, // Use custom controls
       additionalOptions: (context) {
-        if (isLiveStream) {
+        if (_isLiveStream) {
           return <OptionItem>[
             OptionItem(
               iconData: Icons.video_settings,
               title: 'Quality',
               onTap: (context) => _showQualityOptions(context),
-            ),
+            )
           ];
         }
         return [];
@@ -107,11 +107,8 @@ class ScreenPlayerState extends State<ScreenPlayer>
     );
   }
 
-  void _playLiveStream() {
-    _initializePlayer('https://mercyott.com/hls_output/720p.m3u8', true);
-  }
-
   void _showQualityOptions(BuildContext context) {
+    if (_isDisposed) return;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black87,
@@ -121,76 +118,46 @@ class ScreenPlayerState extends State<ScreenPlayer>
       builder: (BuildContext context) {
         return Wrap(
           children: [
-            ListTile(
-              leading: const Icon(Icons.sd, color: Colors.white),
-              title: const Text('Auto', style: TextStyle(color: Colors.white)),
-              onTap: () => _changeVideoQuality(
-                  context, 'https://mercyott.com/hls_output/master.m3u8', true),
-            ),
-            ListTile(
-              leading: const Icon(Icons.sd, color: Colors.white),
-              title: const Text('360p', style: TextStyle(color: Colors.white)),
-              onTap: () => _changeVideoQuality(
-                  context, 'https://mercyott.com/hls_output/360p.m3u8', true),
-            ),
-            ListTile(
-              leading: const Icon(Icons.hd, color: Colors.white),
-              title: const Text('720p', style: TextStyle(color: Colors.white)),
-              onTap: () => _changeVideoQuality(
-                  context, 'https://mercyott.com/hls_output/720p.m3u8', true),
-            ),
-            ListTile(
-              leading: const Icon(Icons.hd, color: Colors.white),
-              title: const Text('1080p', style: TextStyle(color: Colors.white)),
-              onTap: () => _changeVideoQuality(
-                  context,
-                  'https://mercyott.com/hls_output/1080p.m3u8',
-                  true),
-            ),
+            _qualityOption(
+                context, 'Auto', 'https://mercyott.com/hls_output/master.m3u8'),
+            _qualityOption(
+                context, '360p', 'https://mercyott.com/hls_output/360p.m3u8'),
+            _qualityOption(
+                context, '720p', 'https://mercyott.com/hls_output/720p.m3u8'),
+            _qualityOption(
+                context, '1080p', 'https://mercyott.com/hls_output/1080p.m3u8'),
           ],
         );
       },
     );
-  } // Use custom controls
+  }
+
+  Widget _qualityOption(BuildContext context, String quality, String url) {
+    return ListTile(
+      leading: const Icon(Icons.hd, color: Colors.white),
+      title: Text(quality, style: const TextStyle(color: Colors.white)),
+      onTap: () => _changeVideoQuality(context, url),
+    );
+  }
 
   Future<void> _changeVideoQuality(
-      BuildContext context, String videoUrl, bool isLiveStream) async {
-    if (mounted) {
-      Navigator.pop(context);
-    }
-    _initializePlayer(videoUrl, isLiveStream);
-  }
+      BuildContext context, String videoUrl) async {
+    // Close quality bottom sheet if open
+    Navigator.pop(context);
+    debugPrint('Changing quality to: $videoUrl');
 
-  void _listenToOrientationChanges() {
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeMetrics() {
-    final mediaQuery = MediaQuery.of(context);
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final orientation = mediaQuery.orientation;
-      if (_chewieController != null) {
-        if (orientation == Orientation.landscape &&
-            !_chewieController!.isFullScreen) {
-          _chewieController!.enterFullScreen();
-        } else if (orientation == Orientation.portrait &&
-            _chewieController!.isFullScreen) {
-          _chewieController!.exitFullScreen();
-        }
+    // Safely handle transition when changing quality
+    if (_chewieController != null && _chewieController!.isFullScreen) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (mounted) {
+        _initializePlayer(videoUrl, true);
       }
-    });
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.initState();
-    _isDisposed = true;
-    _disposeControllers();
-    _hideButtonTimer?.cancel();
-    super.dispose();
+    } else {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (mounted) {
+        _initializePlayer(videoUrl, true);
+      }
+    }
   }
 
   void _disposeControllers() {
@@ -201,49 +168,54 @@ class ScreenPlayerState extends State<ScreenPlayer>
     _isVideoInitialized = false;
   }
 
-  void _startHideButtonTimer() {
+  void _onScreenTapped() {
+    setState(() {
+      _showButton = true;
+    });
     _hideButtonTimer?.cancel();
     _hideButtonTimer = Timer(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() {
-          _showButton = false;
-        });
+      if (mounted && !_isDisposed) {
+        setState(() => _showButton = false);
       }
     });
   }
 
-  void _onScreenTapped() {
-    log("presses",name: "live");
-    setState(() {
-      _showButton = true;
-    });
-    _startHideButtonTimer();
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _isDisposed = true;
+    _disposeControllers();
+    _hideButtonTimer?.cancel();
+    super.dispose();
   }
 
- @override
-Widget build(BuildContext context) {
-  return GestureDetector(
-    behavior: HitTestBehavior.opaque, // Important! Captures taps anywhere.
-    onTap: _onScreenTapped,
-    child: Stack(
-      children: [
-        _isVideoInitialized && _chewieController != null
-            ? Chewie(controller: _chewieController!)
-            : const Center(child: CircularProgressIndicator()),
-        if (_showButton)
-          Positioned(
-            top: 20,
-            left: 16,
-            child: _liveButton(
-              _isLiveStream ? 'Live' : 'Go Live',
-              _isLiveStream ? Colors.red : const Color(0xFF8DBDCC),
-              _playLiveStream,
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          _isVideoInitialized && _chewieController != null
+              ? Chewie(controller: _chewieController!)
+              : const Center(child: CircularProgressIndicator()),
+          Listener(
+            onPointerDown: (_) => _onScreenTapped(),
+            behavior: HitTestBehavior.translucent,
           ),
-      ],
-    ),
-  );
-}
+          if (_showButton)
+            Positioned(
+              top: 22,
+              left: 16,
+              child: _liveButton(
+                _isLiveStream ? 'Live' : 'Go Live',
+                _isLiveStream ? Colors.red : const Color(0xFF8DBDCC),
+                () => _initializePlayer(
+                    'https://mercyott.com/hls_output/720p.m3u8', true),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
   Widget _liveButton(String text, Color color, VoidCallback onPressed) {
     return Container(
@@ -255,28 +227,10 @@ Widget build(BuildContext context) {
       ),
       child: TextButton(
         onPressed: onPressed,
-        style: TextButton.styleFrom(
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(color: Colors.white, fontSize: 11),
-        ),
+        style: TextButton.styleFrom(padding: EdgeInsets.zero),
+        child: Text(text,
+            style: const TextStyle(color: Colors.white, fontSize: 11)),
       ),
     );
-  }
-}
-
-class LifecycleEventHandler extends WidgetsBindingObserver {
-  final void Function(AppLifecycleState state) onChange;
-
-  LifecycleEventHandler({required this.onChange});
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    onChange(state);
   }
 }

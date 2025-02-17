@@ -41,9 +41,9 @@ class ButtonSection extends StatelessWidget {
         Spacer(),
         GestureDetector(
           onTap: () {
-            const String videoUrl = 'https://example.com/your-video-link';
-            Share.share('Check out this video: $videoUrl',
-                subject: 'Amazing Video');
+            const String videoUrl = 'https://play.google.com/store/apps/details?id=com.mercyott.app';
+            Share.share('Check out this Link: $videoUrl',
+                subject: 'App Link');
           },
           child: Column(
             mainAxisSize: MainAxisSize.min,
