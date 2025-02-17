@@ -1,73 +1,81 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 
-class LiveButtonOverlay extends StatefulWidget {
-  const LiveButtonOverlay({super.key});
+class LiveButtonWidget extends StatefulWidget {
+  final bool isLiveStream;
+  final VoidCallback onLiveButtonPressed;
+
+  const LiveButtonWidget({
+    Key? key,
+    required this.isLiveStream,
+    required this.onLiveButtonPressed,
+  }) : super(key: key);
 
   @override
-  State<LiveButtonOverlay> createState() => _LiveButtonOverlayState();
+  State<LiveButtonWidget> createState() => _LiveButtonWidgetState();
 }
 
-class _LiveButtonOverlayState extends State<LiveButtonOverlay> {
+class _LiveButtonWidgetState extends State<LiveButtonWidget> {
   bool _showButton = true;
-  Timer? _hideTimer;
+  late final _hideButtonTimer;
 
   @override
   void initState() {
     super.initState();
-    _startHideTimer();
+    _startHideButtonTimer();
   }
 
-  void _startHideTimer() {
-    _hideTimer?.cancel(); // Cancel any existing timer
-    _hideTimer = Timer(const Duration(seconds: 5), () {
-      setState(() {
-        _showButton = false;
-      });
+  void _startHideButtonTimer() {
+    _hideButtonTimer?.cancel();
+    _hideButtonTimer = Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _showButton = false;
+        });
+      }
     });
   }
 
-  void _handleTap() {
+  void _onTap() {
     setState(() {
       _showButton = true;
     });
-    _startHideTimer(); // Restart the hide timer
-  }
-
-  @override
-  void dispose() {
-    _hideTimer?.cancel();
-    super.dispose();
+    _startHideButtonTimer();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        behavior: HitTestBehavior.opaque, // Ensures the tap is detected anywhere on the screen
-        onTap: _handleTap,
-        child: Stack(
-          children: [
-            // Your background or video player widget here
-            Container(color: Colors.black), // Placeholder background
-
-            // Conditionally show the "Live" button
-            if (_showButton)
-              Positioned(
-                top: 20,
-                right: 20,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  color: Colors.red,
-                  child: const Text(
-                    'LIVE',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
+    return GestureDetector(
+      onTap: _onTap,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: _showButton ? 1 : 0,
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: Container(
+            margin: const EdgeInsets.only(left: 16, top: 16),
+            height: 24,
+            width: 60,
+            decoration: BoxDecoration(
+              color: widget.isLiveStream ? Colors.red : const Color(0xFF8DBDCC),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TextButton(
+              onPressed: widget.onLiveButtonPressed,
+              style: TextButton.styleFrom(padding: EdgeInsets.zero),
+              child: Text(
+                widget.isLiveStream ? 'Live' : 'Go Live',
+                style: const TextStyle(color: Colors.white, fontSize: 11),
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _hideButtonTimer?.cancel();
+    super.dispose();
   }
 }

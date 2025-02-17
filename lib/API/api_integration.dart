@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ApiIntegration {
   Future<List<dynamic>> getVideoData() async {
-    final videoUrl = Uri.parse('https://ott.mercytv.tv/api/videoApi.php');
+    final videoUrl = Uri.parse('https://mercyott.com/api/videoApi.php');
 
     try {
       final response = await http.get(videoUrl);

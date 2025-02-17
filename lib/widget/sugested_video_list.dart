@@ -167,7 +167,7 @@ class VideoThumbnailCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  'https://ott.mercytv.tv/${programDetails.imageUrl ?? ''}',
+                  'https://mercyott.com/${programDetails.imageUrl ?? ''}',
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
