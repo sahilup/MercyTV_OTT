@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mercy_tv_app/Screens/Splash_screen.dart';
+import 'package:mercy_tv_app/widget/orientaton_listner.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -14,7 +15,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
         useMaterial3: true,
       ),
-      home:  SplashScreen(),
+      home:  OrientationListenerWidget(onOrientationChange: (Orientation ) { print("orientation chnage"); },
+      child: SplashScreen()),
     );
   }
 }

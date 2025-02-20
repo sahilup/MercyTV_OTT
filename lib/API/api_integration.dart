@@ -23,4 +23,15 @@ class ApiIntegration {
       return [];
     }
   }
+
+  Future<String> liveView() async {
+    final response = await http.get(Uri.parse('https://mercyott.com/api/liveViewApi.php'));
+
+    if (response.statusCode == 200) {
+      return response.body.trim(); // This will return the string "117k" or whatever the API returns
+    } else {
+      throw Exception('Failed to load views. Status code: ${response.statusCode}');
+    }
+  }
+
 }
