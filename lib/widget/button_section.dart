@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -7,11 +8,11 @@ class ButtonSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min, // Important for unbounded width issues
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Row(
-          mainAxisSize: MainAxisSize.min, // Important for unbounded width issues
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               height: 50,
@@ -33,22 +34,24 @@ class ButtonSection extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Mulish-Bold'
+                fontFamily: 'Mulish-Bold',
               ),
             ),
           ],
         ),
-        Spacer(),
+        const Spacer(),
         GestureDetector(
           onTap: () {
-            const String videoUrl = 'https://play.google.com/store/apps/details?id=com.mercyott.app';
-            Share.share('Check out this Link: $videoUrl',
-                subject: 'App Link');
+            final String videoUrl = Platform.isIOS
+                ? 'https://mercytv.tv/support-ott/' // iOS link
+                : 'https://play.google.com/store/apps/details?id=com.mercyott.app'; // Android link
+            
+            Share.share('Check out this Link: $videoUrl', subject: 'App Link');
           },
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: const [
-              Icon(Icons.share_outlined, color: Colors.white,size: 26,),
+              Icon(Icons.share_outlined, color: Colors.white, size: 26),
               SizedBox(height: 4),
               Text(
                 'Share',
@@ -56,7 +59,7 @@ class ButtonSection extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  fontFamily: 'Mulish-Medium'
+                  fontFamily: 'Mulish-Medium',
                 ),
               ),
             ],
