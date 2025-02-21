@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mercy_tv_app/Colors/custom_color.dart';
+import 'package:mercy_tv_app/widget/Live_View_widget.dart';
 import 'package:mercy_tv_app/widget/button_section.dart';
 import 'package:mercy_tv_app/widget/screen_player.dart';
 import 'package:mercy_tv_app/API/dataModel.dart';
@@ -132,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                       Row(
                         children: [
                           SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.9,
+                            width: MediaQuery.of(context).size.width * 0.75,
                             child: GestureDetector(
                               child: Text(
                                 _selectedProgramTitle,
@@ -146,7 +147,12 @@ class _HomePageState extends State<HomePage> {
                                 maxLines: 1,
                               ),
                             ),
-                          )
+                          ),
+                          if (_isLiveStream)
+                        const Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: LiveViewWidget(),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
