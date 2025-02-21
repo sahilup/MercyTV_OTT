@@ -10,7 +10,7 @@ class LiveViewWidget extends StatefulWidget {
 
 class _LiveViewWidgetState extends State<LiveViewWidget> {
   final ApiIntegration apiIntegration = ApiIntegration();
-  late Future<String> _liveViewFuture;
+  late Future<String?> _liveViewFuture;
 
   @override
   void initState() {
@@ -20,23 +20,18 @@ class _LiveViewWidgetState extends State<LiveViewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
+    return FutureBuilder<String?>(
       future: _liveViewFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return const Center(
-            child: Text(
-              'Failed',
-              style: TextStyle(color: Colors.white),
-            ),
-          );
+          return const SizedBox(); // Don't show anything while loading
+        } else if (snapshot.hasError || snapshot.data == null || snapshot.data!.isEmpty) {
+          return const SizedBox(); // Hide widget if response is null or empty
         } else {
-          final views = snapshot.data ?? 'N/A';
+          final views = snapshot.data!;
 
           return Container(
-            padding: const EdgeInsets.symmetric(vertical: 4,horizontal: 6),
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white, width: 0.5),
@@ -53,7 +48,7 @@ class _LiveViewWidgetState extends State<LiveViewWidget> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '$views',
+                    views,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,

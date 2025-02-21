@@ -148,7 +148,8 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ),
-                          Padding(
+                          if (_isLiveStream)
+                        const Padding(
                             padding: const EdgeInsets.symmetric(vertical: 2),
                             child: LiveViewWidget(),
                           ),
