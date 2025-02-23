@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:mercy_tv_app/API/api_integration.dart';
 import 'package:mercy_tv_app/API/dataModel.dart';
 import 'package:mercy_tv_app/Colors/custom_color.dart';
+import 'package:mercy_tv_app/controllers/home_controller.dart';
 
 class SuggestedVideoCard extends StatefulWidget {
   final void Function(ProgramDetails) onVideoTap;
@@ -14,7 +17,6 @@ class SuggestedVideoCard extends StatefulWidget {
 
 class _SuggestedVideoCardState extends State<SuggestedVideoCard> {
   late Future<List<dynamic>> _videoDataFuture;
-  int? _currentlyPlayingIndex;
 
   @override
   void initState() {
@@ -33,6 +35,7 @@ class _SuggestedVideoCardState extends State<SuggestedVideoCard> {
 
   @override
   Widget build(BuildContext context) {
+    final HomeController homeController = Get.put(HomeController());
     return FutureBuilder(
       future: _videoDataFuture,
       builder: (context, AsyncSnapshot snapshot) {
@@ -65,15 +68,16 @@ class _SuggestedVideoCardState extends State<SuggestedVideoCard> {
                 videoUrl: video['url'],
               );
 
-              return VideoThumbnailCard(
-                programDetails: programDetails,
-                isPlaying: _currentlyPlayingIndex == index,
-                onTap: (details) {
-                  setState(() {
-                    _currentlyPlayingIndex = index;
-                  });
-                  widget.onVideoTap(details);
-                },
+              return Obx(
+                () => VideoThumbnailCard(
+                  programDetails: programDetails,
+                  isPlaying:
+                      homeController.currentlyPlayingIndex?.value == index,
+                  onTap: (details) {
+                    homeController.currentlyPlayingIndex?.value = index;
+                    widget.onVideoTap(details);
+                  },
+                ),
               );
             },
           );
