@@ -68,7 +68,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _launchURL() async {
-    final Uri url = Uri.parse('https://mercytv.tv/support-ott/');
+    final Uri url = Uri.parse('https://mercytv.tv');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw 'Could not launch $url';
     }
@@ -284,7 +284,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           child: Center(
                             child: Text(
-                              'Sponsor us',
+                              'Visit Website',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: buttonFontSize,
