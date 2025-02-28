@@ -40,29 +40,32 @@ class ButtonSection extends StatelessWidget {
           ],
         ),
         const Spacer(),
-        GestureDetector(
-          onTap: () {
-            final String videoUrl = Platform.isIOS
-                ? 'https://mercytv.tv/support-ott/' // iOS link
-                : 'https://play.google.com/store/apps/details?id=com.mercyott.app'; // Android link
-            
-            Share.share('Check out this Link: $videoUrl', subject: 'App Link');
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.share_outlined, color: Colors.white, size: 26),
-              SizedBox(height: 4),
-              Text(
-                'Share',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Mulish-Medium',
+        Visibility(
+          visible: false, // Hides the share button
+          child: GestureDetector(
+            onTap: () {
+              final String videoUrl = Platform.isIOS
+                  ? 'https://mercytv.tv/' // iOS link
+                  : 'https://play.google.com/store/apps/details?id=com.mercyott.app'; // Android link
+              
+              Share.share('Check out this Link: $videoUrl', subject: 'App Link');
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.share_outlined, color: Colors.white, size: 26),
+                SizedBox(height: 4),
+                Text(
+                  'Share',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Mulish-Medium',
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
