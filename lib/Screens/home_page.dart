@@ -288,7 +288,7 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: buttonFontSize,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.normal,
                                 fontFamily: 'Mulish-Medium',
                               ),
                             ),

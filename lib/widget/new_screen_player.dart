@@ -24,8 +24,8 @@ class NewScreenPlayer extends StatelessWidget {
           Obx(
             () => homeController.showButton.value
                 ? Positioned(
-                    top: 22,
-                    left: 16,
+                    bottom: 40,
+                    right: 20,
                     child: _liveButton(
                       homeController.isLiveStreamVar.value ? 'Live' : 'Go Live',
                       homeController.isLiveStreamVar.value
@@ -34,7 +34,7 @@ class NewScreenPlayer extends StatelessWidget {
                       () {
                         homeController.currentlyPlayingIndex?.value = -1;
                         homeController.initializePlayer(
-                            'https://mercyott.com/hls_output/720p.m3u8', true);
+                            'https://mercyott.com/hls_output/master.m3u8', true);
                       },
                     ),
                   )
